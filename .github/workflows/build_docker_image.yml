@@ -1,0 +1,32 @@
+name: Build OpenWrt Docker x86-64 image
+
+on:
+  workflow_dispatch:
+
+env:
+  FIRMWARE_URL: "https://github.com/mslovecc/openwrt-amd64-v23.05/releases/download/2024.05.20-1651/openwrt-23.05.2-x86-64-generic-rootfs.tar.gz"
+  REPOSITORY: mslovecc/openwrt-amd64
+  TAG: 23.05.2
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@master
+
+      - name: Download Firmware
+        run: |
+          wget $FIRMWARE_URL -O openwrt.tar.gz
+
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        env:
+          FIRMWARE: openwrt.tar.gz
+        with:
+          name: ${{ env.REPOSITORY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          buildargs: FIRMWARE
+          tags: "latest,${{ env.TAG }}"
